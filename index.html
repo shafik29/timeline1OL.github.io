@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timeline avec Menu Déroulant</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+                          body {
+                              background: linear-gradient(135deg, #6a0dad, #000080);
+                              color: #eee9dc;
+                              margin: 0;
+                              padding: 0;
+                              font-family: Arial, sans-serif;
+                              display: flex;
+                              justify-content: center;
+                              align-items: center;
+                              min-height: 100vh;
+                          }
+
+                          .month-selector {
+                              display: flex;
+                              justify-content: center;
+                              background: #000080;
+                              padding: 10px 0;
+                              position: sticky;
+                              top: 0;
+                              z-index: 10;
+                              border-radius: 10px;
+                              flex-wrap: wrap;
+
+                          }
+
+                          .month-selector button {
+                              background: none;
+                              border: none;
+                              color: #eee9dc;
+                              margin: 0 5px;
+                              padding: 5px 10px;
+                              cursor: pointer;
+                              transition: color 0.3s, background 0.3s;
+                              position: relative;
+                              font-size: 14px;
+                          }
+
+                          .month-selector button:hover,
+                          .month-selector button.active {
+                              background: #f98262;
+                              color: white;
+                              border-radius: 4px;
+                          }
+                          .month-selector button[data-month="avril"]::before,
+                          .month-selector button[data-month="décembre"]::before,
+                          .month-selector button[data-month="novembre"]::before,
+                          .month-selector button[data-month="mai"]::before {
+                              content: "📍";
+                              position: absolute;
+                              top: -20px;
+                              left: 50%;
+                              transform: translateX(-50%);
+                              font-size: 18px;
+                          }
+                          .month-selector button[data-month="novembre"]::before,
+                          .month-selector button[data-month="mai"]::before {
+                              content: "📝";
+                          }
+              /* Spécifique pour le mois de mars */
+      /* Styles pour le bouton "Mars" */
+.month-selector button[data-month="mars"] {
+    min-width: 100px; /* Ajuste la largeur minimale du bouton pour accueillir les images */
+    position: relative; /* Nécessaire pour positionner correctement les images */
+    display: flex;
+    align-items: center; /* Aligne le texte et les images verticalement */
+    justify-content: center; /* Centre le texte horizontalement */
+}
+
+.month-selector button[data-month="mars"]::after {
+    content: '';
+    background-image: url('https://cva.parisnanterre.fr/medias/photo/vignette-parcoursup_1606918447800-png');
+    background-size: 20px 20px; /* Ajuste la taille de la première image */
+    background-position: right center; /* Positionne la première image */
+    width: 20px; /* Largeur de la première image */
+    height: 20px; /* Hauteur de la première image */
+    display: inline-block;
+    margin-left: 10px; /* Espacement entre le texte et la première image */
+}
+
+.month-selector button[data-month="mars"]::before {
+    content: '';
+    background-image: url('https://ressources.dane.ac-versailles.fr/IMG/logo/pixcertif.png?1644930313');
+    background-size: 20px 20px; /* Ajuste la taille de la deuxième image */
+    background-position: right center; /* Positionne la deuxième image */
+    width: 20px; /* Largeur de la deuxième image */
+    height: 20px; /* Hauteur de la deuxième image */
+    display: inline-block;
+    margin-right: 10px; /* Espacement entre le texte et la deuxième image */
+}
+
+
+                          .timeline-container {
+                              position: relative;
+                              max-width: /*1200px;*/100%;
+                              margin: 20px auto;
+                              overflow-x: auto;
+                              white-space: nowrap;
+                          }
+
+                          .timeline {
+                              display: flex;
+                              list-style: none;
+                              padding: 0;
+                              margin: 0;
+                              position: relative;
+                          }
+
+                          .timeline-item {
+                              position: relative;
+                              min-width: 180px;
+                              padding: 15px;
+                              text-align: center;
+                              background: linear-gradient(135deg, #6a0dad, #000080);
+                              color: #eee9dc;
+                              border-radius: 8px;
+                              margin-right: 15px;
+                              flex-shrink: 0;
+                              box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                              transition: background 0.3s, color 0.3s;
+                              display: none;
+                              cursor: pointer;
+                          }
+
+                          .timeline-item.active {
+                              display: inline-block;
+                          }
+
+                          .timeline-item:hover {
+                              background: linear-gradient(135deg, #f98262, #ff7e5f);
+                              color: #fff;
+                          }
+
+                          .timeline-item .date {
+                              display: block;
+                              margin-top: 10px;
+                              font-weight: bold;
+                          }
+
+                          .timeline-item .timeline-icon {
+                              position: absolute;
+                              top: 2px;
+                              left: 2px;
+                              background: #4037F3;
+                              color: #fff;
+                              width: 24px;
+                              height: 24px;
+                              border-radius: 50%;
+                              text-align: center;
+                              line-height: 24px;
+                              font-size: 16px;
+                              z-index: 1;
+                          }
+
+                          .timeline-item p.additional-info {
+                              display: none;
+                              margin-top: 10px;
+                              font-size: 14px;
+                              background: rgba(0,0,0,0.2);
+                              padding: 10px;
+                              border-radius: 4px;
+                          }
+
+                          #countdown {
+                              margin-top: 20px;
+                              text-align: center;
+                              font-size: 18px;
+                              color: #fff;
+                          }
+
+                          /* Cible le 5ème élément de la timeline */
+.timeline-item:nth-child(4) {
+  background: linear-gradient(135deg, #f7e600, #f0b700);
+  color: #fff;/*#4037F3; /* Couleur du texte en noir */
+}
+
+.timeline-item:nth-child(5) {
+background: linear-gradient(135deg, #ff0000, #ff6600);  
+color: #fff;/*#4037F3; /* Couleur du texte en noir */
+}
+
+/* Cible le 7ème élément de la timeline */
+.timeline-item:nth-child(7) {
+  background: linear-gradient(135deg, #f7e600, #f0b700);
+  color: #fff;
+}
+
+/* Cible le 9ème élément de la timeline */
+.timeline-item:nth-child(8) {
+  background: linear-gradient(135deg, #f7e600, #f0b700);
+  color: #fff;
+}
+.timeline-item:nth-child(10) {
+background: linear-gradient(135deg, #ff0000, #ff6600);  
+color: #fff;/*#4037F3; /* Couleur du texte en noir */
+}
+/* Media Queries */
+  @media (max-width: 768px) {
+    .month-selector button {
+      font-size: 12px;
+      padding: 5px;
+    }
+
+    .timeline-item {
+      min-width: 150px;
+      font-size: 14px;
+      margin-right: 10px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .month-selector button {
+      font-size: 10px;
+      padding: 4px;
+    }
+
+    .timeline-item {
+      min-width: 120px;
+      font-size: 12px;
+      margin-right: 5px;
+    }
+  }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2 class="text-center text-light mt-3">Timeline des évènements</h2>
+      <p class="text-center text-light mb-4">
+        Sélectionnez un mois pour voir les événements correspondants à venir.
+      </p>
+
+      <div class="month-selector" id="month-selector">
+        <button data-month="septembre">Septembre</button>
+        <button data-month="octobre">Octobre</button>
+        <button data-month="novembre">Novembre</button>
+        <button data-month="décembre">Décembre</button>
+        <button data-month="janvier">Janvier</button>
+        <button data-month="février">Février</button>
+        <button data-month="mars">Mars</button>
+        <button data-month="avril">Avril</button>
+        <button data-month="mai">Mai</button>
+        <button data-month="juin">Juin</button>
+        <button data-month="juillet">Juillet</button>
+      </div>
+
+      <div id="countdown"></div>
+
+      <div class="timeline-container">
+        <ul class="timeline" id="timeline">
+          <li class="timeline-item" data-month="septembre">
+            <div class="timeline-icon">1</div>
+            <h5>Rentrée des classes</h5>
+            <span class="date">2 septembre 2024</span>
+            <p>Description ou détails concernant la rentrée des classes.</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur la rentrée.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="septembre">
+            <div class="timeline-icon">2</div>
+            <h5>Début des cours</h5>
+            <span class="date">Jeudi 5/09/2024</span>
+            <p>Description ou détails concernant le début des cours.</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur le début des cours.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="septembre">
+            <div class="timeline-icon">3</div>
+            <h5>Remise des emplois du temps</h5>
+            <span class="date">23/09/2024</span>
+            <p>
+              Description ou détails
+            </p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur la remise des
+              emplois du temps.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="octobre">
+            <div class="timeline-icon">4</div>
+            <h5>Vacances</h5>
+            <span class="date">21/10/2024 - 3/11/2024</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur les vacances.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="novembre">
+            <div class="timeline-icon">5</div>
+            <h5> Devoirs commun </h5>
+            <span class="date">25/11/2024 - 29/11/2024</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur l'examen blanc.
+            </p>
+          </li>
+          <li class="timeline-item bg-danger text-light" data-month="décembre">
+            <div class="timeline-icon">6</div>
+            <h5>PFMP1</h5>
+            <span class="date">30/09/2024 - 18/10/2024</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur PFMP1.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="décembre">
+            <div class="timeline-icon">7</div>
+            <h5>Vacances de Noël</h5>
+            <span class="date">23/12/2024 - 05/01/2025</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur les vacances de
+              Noël.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="avril">
+            <div class="timeline-icon">8</div>
+            <h5>Vacances de printemps</h5>
+            <span class="date">14/04/2025 - 27/04/2025</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur les vacances de
+              printemps.
+            </p>
+          </li>
+          <li class="timeline-item bg-danger text-light" data-month="avril">
+            <div class="timeline-icon">9</div>
+            <h5>PFMP2</h5>
+            <span class="date">06/01/2025 - 24/01/2025</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur PFMP2.
+            </p>
+          </li>
+          <li class="timeline-item" data-month="mai">
+            <div class="timeline-icon">10</div>
+            <h5>CCF MATHS</h5>
+            <span class="date">Lundi 26 mai</span>
+            <p>Description ou détails</p>
+            <p class="additional-info">
+              Note cachée: Informations supplémentaires sur les épreuves du BAC.
+            </p>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const buttons = document.querySelectorAll('.month-selector button');
+          const items = document.querySelectorAll('.timeline-item');
+
+          buttons.forEach(button => {
+              button.addEventListener('click', () => {
+                  const month = button.getAttribute('data-month');
+
+                  // Remove active class from all buttons
+                  buttons.forEach(btn => btn.classList.remove('active'));
+
+                  // Add active class to the clicked button
+                  button.classList.add('active');
+
+                  // Show the relevant timeline items
+                  items.forEach(item => {
+                      if (item.getAttribute('data-month') === month) {
+                          item.classList.add('active');
+                      } else {
+                          item.classList.remove('active');
+                      }
+                  });
+              });
+          });
+
+          items.forEach(item => {
+              item.addEventListener('click', () => {
+                  const info = item.querySelector('.additional-info');
+                  info.style.display = info.style.display === 'none' || !info.style.display ? 'block' : 'none';
+              });
+          });
+
+          function updateCountdown() {
+              const today = new Date();
+              const firstDate = new Date('2024-12-02');
+              const secondDate = new Date('2025-04-28');
+              let targetDate = firstDate;
+
+              if (today > firstDate) {
+                  targetDate = secondDate;
+              }
+
+              const timeDiff = targetDate - today;
+              const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+              const countdownEl = document.getElementById('countdown');
+              countdownEl.innerHTML = `Il reste ${daysRemaining} jour${daysRemaining > 1 ? 's' : ''} avant le départ en PFMP.`;
+          }
+
+          setInterval(updateCountdown, 86400000); // Update every day
+          updateCountdown(); // Initial call to display the countdown
+
+          // Default: Show September events
+          document.querySelector('button[data-month="septembre"]').click();
+      });
+    </script>
+  </body>
+</html>
